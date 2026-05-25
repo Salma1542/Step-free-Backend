@@ -18,7 +18,8 @@ const register = async (req, res) => {
     const validatedData = registerSchema.parse(req.body);
 
     const {
-      name,
+   firstName,
+     lastName,
       email,
       password,
       city,
@@ -40,7 +41,8 @@ const register = async (req, res) => {
     const otp = generateOTP();
 
     const user = await User.create({
-      name,
+    firstName,
+    lastName,
       email,
       password,
       city,
@@ -63,14 +65,19 @@ const register = async (req, res) => {
       success: true,
       message: "OTP sent to email",
     });
-  } catch (error) {
-    return res.status(500).json({
+  }  catch (error) {
+  if (error.name === "ZodError") {
+    return res.status(400).json({
       success: false,
-      message: error.errors
-        ? error.errors[0].message
-        : error.message,
+      message: error.issues[0].message,
     });
   }
+
+  return res.status(500).json({
+    success: false,
+    message: error.message,
+  });
+}
 };
 
 const login = async (req, res) => {

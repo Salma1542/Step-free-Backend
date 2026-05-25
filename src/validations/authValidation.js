@@ -3,10 +3,16 @@
 
 const registerSchema = z.object({
 
-    name: z
+    firstName: z
         .string()
-        .min(3, 'Name must be at least 3 characters')
-        .max(50, 'Name is too long')
+        .min(2, 'First name must be at least 2 characters')
+        .max(50, 'First name is too long')
+        .trim(),
+
+    lastName: z
+        .string()
+        .min(2, 'Last name must be at least 2 characters')
+        .max(50, 'Last name is too long')
         .trim(),
 
     email: z
@@ -18,7 +24,7 @@ const registerSchema = z.object({
         .string()
         .min(8, 'Password must be at least 8 characters')
         .regex(
-            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/,
+/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/,
             'Password must contain uppercase, lowercase, number and special character'
         ),
 
