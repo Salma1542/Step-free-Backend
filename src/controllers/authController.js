@@ -1,40 +1,32 @@
 const User = require("../models/User");
 const sendEmail = require("../utils/sendEmail");
 const generateToken = require('../utils/generateToken');
-
+const {
+  registerSchema,
+  loginSchema,
+  verifyOTPSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+} = require("../validations/authValidation");
 const generateOTP = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
+
 const register = async (req, res) => {
   try {
+    const validatedData = registerSchema.parse(req.body);
+
     const {
       name,
       email,
       password,
-      confirmPassword,
       city,
       phone,
       gender,
       dateOfBirth,
       role,
-    } = req.body;
-
-    if (password !== confirmPassword) {
-      return res.status(400).json({
-        success: false,
-        message: "Password do not match",
-      });
-    }
-
-    const allowedRoles = ["user", "driver", "placeOwner"];
-
-    if (!allowedRoles.includes(role)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid Role",
-      });
-    }
+    } = validatedData;
 
     const userExists = await User.findOne({ email });
 
@@ -61,8 +53,6 @@ const register = async (req, res) => {
       isVerified: false,
     });
 
-    await user.save(); 
-
     await sendEmail({
       email: user.email,
       subject: "Your OTP Code - Step Free",
@@ -72,26 +62,22 @@ const register = async (req, res) => {
     return res.status(201).json({
       success: true,
       message: "OTP sent to email",
-      token: generateToken(user._id, user.role),
-      data: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        city: user.city,
-      },
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: error.errors
+        ? error.errors[0].message
+        : error.message,
     });
   }
 };
 
 const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const validatedData = loginSchema.parse(req.body);
+
+    const { email, password } = validatedData;
 
     const user = await User.findOne({ email }).select("+password");
 
@@ -138,7 +124,9 @@ const login = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: error.errors
+        ? error.errors[0].message
+        : error.message,
     });
   }
 };
@@ -152,7 +140,9 @@ const getMe = async (req, res) => {
 
 const verifyOTP = async (req, res) => {
   try {
-    const { email, otp } = req.body;
+    const validatedData = verifyOTPSchema.parse(req.body);
+
+    const { email, otp } = validatedData;
 
     const user = await User.findOne({ email });
 
@@ -197,14 +187,18 @@ const verifyOTP = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: error.errors
+        ? error.errors[0].message
+        : error.message,
     });
   }
 };
 
 const resendOTP = async (req, res) => {
   try {
-    const { email } = req.body;
+    const validatedData = forgotPasswordSchema.parse(req.body);
+
+    const { email } = validatedData;
 
     const user = await User.findOne({ email });
 
@@ -212,6 +206,13 @@ const resendOTP = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: "User not found",
+      });
+    }
+
+    if (user.isVerified) {
+      return res.status(400).json({
+        success: false,
+        message: "User already verified",
       });
     }
 
@@ -225,58 +226,83 @@ const resendOTP = async (req, res) => {
     await sendEmail({
       email: user.email,
       subject: "New OTP Code - Step Free",
-      message: `Your new OTP is: ${otp}.`,
+      message: `Your new OTP is: ${otp}`,
     });
 
     return res.status(200).json({
       success: true,
-      message: "OTP sent successfully to your email",
+      message: "OTP sent successfully",
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: error.errors
+        ? error.errors[0].message
+        : error.message,
     });
   }
 };
 
-const forgotPassword=async (req,res)=>{
-    try{
-        const{email}=req.body
-        const user=await User.findOne({email})
-            if (!user) {
+const forgotPassword = async (req, res) => {
+  try {
+    const validatedData = forgotPasswordSchema.parse(req.body);
+
+    const { email } = validatedData;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
       return res.status(404).json({
         success: false,
         message: "User not found",
       });
     }
-const otp=generateOTP()
-user.resetPasswordOtp=otp
-user.resetPasswordOtpExpire=Date.now()+10*60*1000
-await user.save()
 
-await sendEmail({
+    if (!user.isVerified) {
+      return res.status(400).json({
+        success: false,
+        message: "Please verify your account first",
+      });
+    }
+
+    const otp = generateOTP();
+
+    user.resetPasswordOtp = otp;
+    user.resetPasswordOtpExpire =
+      Date.now() + 10 * 60 * 1000;
+
+    await user.save();
+
+    await sendEmail({
       email: user.email,
-      subject: " Reset Password OTP - Step Free",
-      message: otp,
+      subject: "Reset Password OTP - Step Free",
+      message: `Your reset OTP is: ${otp}`,
     });
-     res.status(200).json({
+
+    return res.status(200).json({
       success: true,
       message: "Reset OTP sent to email",
     });
-    }catch(error)
-    {
-   res.status(500).json({
+  } catch (error) {
+    return res.status(500).json({
       success: false,
-      message: error.message,
+      message: error.errors
+        ? error.errors[0].message
+        : error.message,
     });
-    }
-}
-
+  }
+};
 
 const resetPassword = async (req, res) => {
   try {
-    const { email, otp, newPassword } = req.body;
+    const validatedData =
+      resetPasswordSchema.parse(req.body);
+
+    const {
+      email,
+      otp,
+      newPassword,
+    } = validatedData;
 
     const user = await User.findOne({ email }).select("+password");
 
@@ -308,17 +334,20 @@ const resetPassword = async (req, res) => {
 
     await user.save();
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Password reset successfully",
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: error.message,
+      message: error.errors
+        ? error.errors[0].message
+        : error.message,
     });
   }
 };
+
 module.exports = {
   register,
   login,
