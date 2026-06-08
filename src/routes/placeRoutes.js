@@ -20,7 +20,7 @@ const {
  *     summary: Get all places
  *     parameters:
  *       - in: query
- *         name: category
+ *         name: categorygit checkout places2
  *         schema:
  *           type: string
  *           enum: [Restaurant, Hospital, Mall, Hotel, Cafe, Bank]
