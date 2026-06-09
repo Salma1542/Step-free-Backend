@@ -27,6 +27,8 @@ const register = async (req, res) => {
       gender,
       dateOfBirth,
       role,
+        nationalId,
+
     } = validatedData;
 
     const userExists = await User.findOne({ email });
@@ -50,6 +52,7 @@ const register = async (req, res) => {
       gender,
       dateOfBirth,
       role: role || "user",
+        nationalId,
       otp,
       otpExpire: Date.now() + 10 * 60 * 1000,
       isVerified: false,
