@@ -36,6 +36,10 @@ const registerSchema = z.object({
         .min(2, 'City is required')
         .trim(),
 
+    nationalId: z
+    .string()
+    .optional(),
+
     phone: z
         .string()
         .optional(),
@@ -58,18 +62,23 @@ const registerSchema = z.object({
 
 })
 .refine(
-
-    (data) =>
-        data.password === data.confirmPassword,
-
+    (data) => data.password === data.confirmPassword,
     {
-
         message: 'Passwords do not match',
-
         path: ['confirmPassword'],
-
     }
-
+)
+.refine(
+    (data) => {
+        if (data.role === 'driver') {
+            return !!data.nationalId;
+        }
+        return true;
+    },
+    {
+        message: 'National ID is required for drivers',
+        path: ['nationalId'],
+    }
 );
 
 

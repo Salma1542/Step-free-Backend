@@ -56,6 +56,13 @@ const userSchema=new mongoose.Schema(
                 
 
             },
+            nationalId: {
+  type: String,
+  required: function () {
+    return this.role === 'driver';
+  },
+  trim: true,
+},
             isVerified:{
                 type:Boolean,
                 default:false
