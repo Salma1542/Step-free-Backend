@@ -1,3 +1,4 @@
+
 const mongoose = require("mongoose");
 
 const reviewSchema = new mongoose.Schema(
@@ -21,6 +22,8 @@ const reviewSchema = new mongoose.Schema(
       required: true,
     },
 
+
+
     comment: {
       type: String,
       required: true,
@@ -28,7 +31,9 @@ const reviewSchema = new mongoose.Schema(
     },
   },
   {
+
     timestamps: true,
+
   }
 );
 
