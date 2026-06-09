@@ -6,7 +6,7 @@ const authRoutes = require('./routes/authRoutes');
 const placeRoutes = require('./routes/placeRoutes');
 const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("./config/swagger");
-
+const adminReviewRoutes = require("./routes/adminReviewRoutes");
 
 app.use(cors())
 app.use(express.json())
@@ -17,5 +17,5 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // Routes
 app.use('/api/auth', authRoutes)
 app.use('/api/places', placeRoutes)
-
+app.use("/api/admin", adminReviewRoutes);
 module.exports=app
