@@ -11,6 +11,7 @@ const router = express.Router();
 const {
   register,
   login,
+  googleLogin,
   getMe,
   verifyOTP,
   resendOTP,
@@ -250,5 +251,5 @@ router.post("/forgot-password", forgotPassword);
  *         description: Password reset successfully
  */
 router.post("/reset-password", resetPassword);
-
+router.post("/google",googleLogin);
 module.exports = router;
