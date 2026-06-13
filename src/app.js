@@ -21,3 +21,7 @@ app.use('/api/places', placeRoutes)
 app.use("/api/admin", adminRoutes);
 app.use("/api", reviewRoutes);
 module.exports=app
+
+const serviceAreaRoutes = require("./routes/serviceAreaRoutes");
+// ...
+app.use("/api/driver/service-areas", serviceAreaRoutes);
