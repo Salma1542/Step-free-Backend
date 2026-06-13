@@ -22,36 +22,53 @@
 
 // module.exports=app
 
-
 const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
+
 const app = express();
 
-// 1. Middleware (يجب أن يكون قبل أي راوتر)
-app.use(cors());
-app.use(express.json());        // ← محلل JSON أساسي
-app.use(cookieParser());
-
-// 2. استيراد الراوترات
 const authRoutes = require("./routes/authRoutes");
 const placeRoutes = require("./routes/placeRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
 const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("./config/swagger");
 const adminReviewRoutes = require("./routes/adminReviewRoutes");
+const adminPlaceRoutes = require("./routes/adminPlaceRoutes");
 
-app.use(cors())
-app.use(express.json())
-app.use(cookieParser())
 
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+// CORS
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
+
+
+app.use(express.json());
+app.use(cookieParser());
+
+
+// Swagger
+app.use(
+  "/api-docs",
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpec)
+);
+
 
 // Routes
-app.use('/api/auth', authRoutes)
-app.use('/api/places', placeRoutes)
+app.use("/api/auth", authRoutes);
+
+app.use("/api/places", placeRoutes);
+
 app.use("/api/admin", adminReviewRoutes);
-module.exports=app
 
-app.use("/api", reviewRoutes);   // ← مرّة واحدة وبعد body parser
+app.use("/api/admin", adminPlaceRoutes);
 
+app.use("/api", reviewRoutes);
+
+
+
+module.exports = app;
