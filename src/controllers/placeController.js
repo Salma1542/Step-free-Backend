@@ -270,8 +270,9 @@ const getAllPlaces = async (req, res) => {
   try {
     const { category, search, limit = 20, page = 1 } = req.query;
 
-    let filter = {};
-
+let filter = {
+  status: "approved",
+};
     if (category && category !== "All") {
       filter.type = category;
     }
@@ -349,11 +350,31 @@ const getPlaceById = async (req, res) => {
 
 const createPlace = async (req, res) => {
   try {
-    const {
-      name, description, type, image, area, distance, lat, lng, tags, rating,
-      district, images, features, reviews, drivers, isAccessible, reviewCount
-    } = req.body;
+  const {
+  name,
+  description,
+  type,
+  area,
+  distance,
+  lat,
+  lng,
+  tags,
+  rating,
+  district,
+  features,
+  reviews,
+  drivers,
+  isAccessible,
+  reviewCount,
+} = req.body;
+let parsedTags = [];
 
+if (tags) {
+  parsedTags =
+    typeof tags === "string"
+      ? JSON.parse(tags)
+      : tags;
+}
     // التحقق من الحقول المطلوبة الأساسية
     if (!name || !description || !type || !area || lat === undefined || lng === undefined) {
       return res.status(400).json({
@@ -369,8 +390,14 @@ const createPlace = async (req, res) => {
         message: `Invalid type. Must be one of: ${validTypes.join(", ")}`,
       });
     }
+const image =
+  req.files?.image?.[0]?.path || "";
 
-    // تجهيز كائن المكان الجديد
+const images =
+  req.files?.images?.map((file) => ({
+    src: file.path,
+    alt: "",
+  })) || [];
     const newPlace = new Place({
       name,
       description,
@@ -385,7 +412,7 @@ const createPlace = async (req, res) => {
         type: "Point",
         coordinates: [parseFloat(lng), parseFloat(lat)],
       },
-      tags: tags || [],
+      tags: parsedTags,
       rating: rating || 0,
       features: features || [],
       images: images || [],     // صور المعرض

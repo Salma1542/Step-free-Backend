@@ -2,6 +2,7 @@
 
 const express = require("express");
 const router = express.Router();
+const upload = require("../middleware/upload");
 const {
   getAllPlaces,
   getPlaceById,
@@ -11,7 +12,6 @@ const {
   getNearbyPlaces,
   
 } = require("../controllers/placeController");
-
 /**
  * @swagger
  * /places:
@@ -120,8 +120,15 @@ router.get("/:id", getPlaceById);
  *       400:
  *         description: Bad request
  */
-router.post("/", createPlace);
 
+router.post(
+  "/",
+  upload.fields([
+    { name: "image", maxCount: 1 },
+    { name: "images", maxCount: 10 },
+  ]),
+  createPlace
+);
 /**
  * @swagger
  * /places/{id}:
