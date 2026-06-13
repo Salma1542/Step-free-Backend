@@ -1,6 +1,11 @@
 const User = require("../models/User");
 const sendEmail = require("../utils/sendEmail");
 const generateToken = require('../utils/generateToken');
+const { OAuth2Client } = require("google-auth-library");
+
+const client = new OAuth2Client(
+process.env.GOOGLE_CLIENT_ID
+);
 const {
   registerSchema,
   loginSchema,
@@ -140,7 +145,131 @@ const login = async (req, res) => {
     });
   }
 };
+const googleLogin = async (req, res) => {
+try {
 
+const { access_token } =
+req.body;
+
+if (!access_token) {
+return res.status(400).json({
+success: false,
+message:
+"Google token is required",
+});
+}
+
+const response =
+await fetch(
+`https://www.googleapis.com/oauth2/v3/userinfo`,
+{
+headers: {
+Authorization:
+`Bearer ${access_token}`,
+},
+}
+);
+
+const googleUser =
+await response.json();
+
+if (!googleUser.email) {
+return res.status(400).json({
+success: false,
+message:
+"Google login failed",
+});
+}
+
+let user =
+await User.findOne({
+email:
+googleUser.email,
+});
+
+if (!user) {
+
+user =
+await User.create({
+
+firstName:
+googleUser.given_name ||
+"User",
+
+lastName:
+googleUser.family_name ||
+"",
+
+email:
+googleUser.email,
+
+password:
+Math.random()
+.toString(36),
+
+role:
+"user",
+
+isVerified:
+true,
+
+});
+
+}
+
+if (
+user.isBlocked
+) {
+
+return res.status(403).json({
+success: false,
+message:
+"Account blocked",
+});
+
+}
+
+return res.status(200).json({
+
+success: true,
+
+token:
+generateToken(
+user._id,
+user.role
+),
+
+data: {
+id:
+user._id,
+
+firstName:
+user.firstName,
+
+lastName:
+user.lastName,
+
+email:
+user.email,
+
+role:
+user.role,
+},
+
+});
+
+} catch (
+error
+) {
+
+return res.status(500).json({
+success: false,
+message:
+error.message,
+});
+
+}
+};
 const getMe = async (req, res) => {
   return res.status(200).json({
     success: true,
@@ -361,6 +490,8 @@ const resetPassword = async (req, res) => {
 module.exports = {
   register,
   login,
+  googleLogin,
+
   getMe,
   verifyOTP,
   resendOTP,
