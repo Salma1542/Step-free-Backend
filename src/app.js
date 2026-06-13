@@ -68,7 +68,10 @@ app.use("/api/admin", adminReviewRoutes);
 app.use("/api/admin", adminPlaceRoutes);
 
 app.use("/api", reviewRoutes);
+module.exports=app
+
+const serviceAreaRoutes = require("./routes/serviceAreaRoutes");
+// ...
+app.use("/api/driver/service-areas", serviceAreaRoutes);
 
 
-
-module.exports = app;
