@@ -2,8 +2,6 @@
 
 const express = require("express");
 const router = express.Router();
-const upload = require("../middleware/upload");
-const protect = require("../middleware/authMiddleware");
 const {
   getAllPlaces,
   getPlaceById,
@@ -11,9 +9,8 @@ const {
   updatePlace,
   deletePlace,
   getNearbyPlaces,
-  getMyPlaces,
-
 } = require("../controllers/placeController");
+
 /**
  * @swagger
  * /places:
@@ -81,7 +78,6 @@ router.get("/", getAllPlaces);
  *         description: Bad request
  */
 router.get("/nearby", getNearbyPlaces);
-router.get("/my-places", protect, getMyPlaces);
 
 /**
  * @swagger
@@ -123,16 +119,8 @@ router.get("/:id", getPlaceById);
  *       400:
  *         description: Bad request
  */
+router.post("/", createPlace);
 
-router.post(
-  "/",
-  protect,
-  upload.fields([
-    { name: "image", maxCount: 1 },
-    { name: "images", maxCount: 10 },
-  ]),
-  createPlace
-);
 /**
  * @swagger
  * /places/{id}:
@@ -180,4 +168,5 @@ router.put("/:id", updatePlace);
  *         description: Not found
  */
 router.delete("/:id", deletePlace);
+
 module.exports = router;

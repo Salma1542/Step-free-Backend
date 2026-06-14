@@ -1,30 +1,40 @@
 const multer = require("multer");
-const cloudinary = require("../config/cloudinary");
+const path = require("path");
+const fs = require("fs");
 
-const {
-CloudinaryStorage,
-} = require("multer-storage-cloudinary");
+const uploadDir = path.join(__dirname, "..", "..", "uploads");
 
-const storage =
-new CloudinaryStorage({
-cloudinary,
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
 
-params: {
-folder: "places",
-
-allowed_formats: [
-"jpg",
-"png",
-"jpeg",
-"webp",
-],
-},
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, uploadDir),
+  filename: (req, file, cb) => {
+    const safeExt = path.extname(file.originalname).toLowerCase();
+    const uniqueName = `${Date.now()}-${Math.round(Math.random() * 1e9)}${safeExt}`;
+    cb(null, uniqueName);
+  },
 });
 
-const upload =
-multer({
-storage,
-});
+const allowedTypes = [
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/webp",
+  "application/pdf",
+];
 
-module.exports =
-upload;
+const fileFilter = (req, file, cb) => {
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error("Only images and PDF files are allowed"));
+  }
+};
+
+module.exports = multer({
+  storage,
+  fileFilter,
+  limits: { fileSize: 10 * 1024 * 1024 },
+});
