@@ -35,6 +35,7 @@ const acceptPlace = async (req, res) => {
     place.status = "accepted";
 
     await place.save();
+console.log("Status after save:", place.status);
 
     res.status(200).json({
       success: true,
@@ -76,7 +77,9 @@ const deletePlace = async (req, res) => {
 
 const getAllPlaces = async (req, res) => {
   try {
-    const places = await Place.find().sort({ createdAt: -1 });
+    const places = await Place.find({
+      status: "approved",
+    }).sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,

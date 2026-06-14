@@ -271,7 +271,7 @@ const getAllPlaces = async (req, res) => {
     const { category, search, limit = 20, page = 1 } = req.query;
 
 let filter = {
-  status: "approved",
+  status: "accepted",
 };
     if (category && category !== "All") {
       filter.type = category;
@@ -366,6 +366,7 @@ const createPlace = async (req, res) => {
   drivers,
   isAccessible,
   reviewCount,
+  
 } = req.body;
 let parsedTags = [];
 
@@ -398,6 +399,7 @@ const images =
     src: file.path,
     alt: "",
   })) || [];
+  console.log(req.user);
     const newPlace = new Place({
       name,
       description,
@@ -419,7 +421,9 @@ const images =
       reviews: reviews || [],
       reviewCount: reviewCount !== undefined ? reviewCount : (reviews ? reviews.length : 0),
       isAccessible: isAccessible !== undefined ? isAccessible : true,
-      drivers: drivers || [],   // مصفوفة ObjectIds للسائقين (اختياري)
+      drivers: drivers || [],
+     owner: req.user._id,
+   // مصفوفة ObjectIds للسائقين (اختياري)
     });
 
     await newPlace.save();
@@ -565,7 +569,27 @@ const getNearbyPlaces = async (req, res) => {
     });
   }
 };
+const getMyPlaces = async (req, res) => {
+  try {
+    console.log("USER ID =", req.user._id);
 
+    const places = await Place.find({
+      owner: req.user._id,
+    });
+
+    console.log("PLACES =", places);
+
+    res.status(200).json({
+      success: true,
+      data: places,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
 module.exports = {
   getAllPlaces,
   getPlaceById,
@@ -573,4 +597,6 @@ module.exports = {
   updatePlace,
   deletePlace,
   getNearbyPlaces,
+   getMyPlaces,
+
 };
