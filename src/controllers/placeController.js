@@ -270,9 +270,8 @@ const getAllPlaces = async (req, res) => {
   try {
     const { category, search, limit = 20, page = 1 } = req.query;
 
-let filter = {
-  status: "accepted",
-};
+    let filter = {};
+
     if (category && category !== "All") {
       filter.type = category;
     }
@@ -350,32 +349,11 @@ const getPlaceById = async (req, res) => {
 
 const createPlace = async (req, res) => {
   try {
-  const {
-  name,
-  description,
-  type,
-  area,
-  distance,
-  lat,
-  lng,
-  tags,
-  rating,
-  district,
-  features,
-  reviews,
-  drivers,
-  isAccessible,
-  reviewCount,
-  
-} = req.body;
-let parsedTags = [];
+    const {
+      name, description, type, image, area, distance, lat, lng, tags, rating,
+      district, images, features, reviews, drivers, isAccessible, reviewCount
+    } = req.body;
 
-if (tags) {
-  parsedTags =
-    typeof tags === "string"
-      ? JSON.parse(tags)
-      : tags;
-}
     // التحقق من الحقول المطلوبة الأساسية
     if (!name || !description || !type || !area || lat === undefined || lng === undefined) {
       return res.status(400).json({
@@ -391,15 +369,8 @@ if (tags) {
         message: `Invalid type. Must be one of: ${validTypes.join(", ")}`,
       });
     }
-const image =
-  req.files?.image?.[0]?.path || "";
 
-const images =
-  req.files?.images?.map((file) => ({
-    src: file.path,
-    alt: "",
-  })) || [];
-  console.log(req.user);
+    // تجهيز كائن المكان الجديد
     const newPlace = new Place({
       name,
       description,
@@ -414,16 +385,14 @@ const images =
         type: "Point",
         coordinates: [parseFloat(lng), parseFloat(lat)],
       },
-      tags: parsedTags,
+      tags: tags || [],
       rating: rating || 0,
       features: features || [],
       images: images || [],     // صور المعرض
       reviews: reviews || [],
       reviewCount: reviewCount !== undefined ? reviewCount : (reviews ? reviews.length : 0),
       isAccessible: isAccessible !== undefined ? isAccessible : true,
-      drivers: drivers || [],
-     owner: req.user._id,
-   // مصفوفة ObjectIds للسائقين (اختياري)
+      drivers: drivers || [],   // مصفوفة ObjectIds للسائقين (اختياري)
     });
 
     await newPlace.save();
@@ -569,27 +538,7 @@ const getNearbyPlaces = async (req, res) => {
     });
   }
 };
-const getMyPlaces = async (req, res) => {
-  try {
-    console.log("USER ID =", req.user._id);
 
-    const places = await Place.find({
-      owner: req.user._id,
-    });
-
-    console.log("PLACES =", places);
-
-    res.status(200).json({
-      success: true,
-      data: places,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
 module.exports = {
   getAllPlaces,
   getPlaceById,
@@ -597,6 +546,4 @@ module.exports = {
   updatePlace,
   deletePlace,
   getNearbyPlaces,
-   getMyPlaces,
-
 };

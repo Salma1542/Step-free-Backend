@@ -319,7 +319,7 @@ const placeSchema = new mongoose.Schema(
         subtext: { type: String, default: "" },
       },
     ],
-    // التقييم وعدد المراجعات (يتم حسابهم من جدول المراجعات المستقل)ش
+    // التقييم وعدد المراجعات (يتم حسابهم من جدول المراجعات المستقل)
     rating: {
       type: Number,
       min: 0,
@@ -334,16 +334,6 @@ const placeSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
-    status: {
-  type: String,
-  enum: ["pending", "accepted", "rejected"],
-  default: "pending",
-},
-owner: {
-  type: mongoose.Schema.Types.ObjectId,
-  ref: "User",
-  required: true,
-},
     // إشارة للسائقين المرتبطين (اختياري)
     drivers: [
       {
