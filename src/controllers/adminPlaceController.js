@@ -36,6 +36,7 @@ const acceptPlace = async (req, res) => {
 
     await place.save();
 console.log("Status after save:", place.status);
+
     res.status(200).json({
       success: true,
       message: "Place accepted successfully",
