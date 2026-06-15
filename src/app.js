@@ -35,7 +35,7 @@ const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("./config/swagger");
 const adminReviewRoutes = require("./routes/adminReviewRoutes");
 const adminPlaceRoutes = require("./routes/adminPlaceRoutes");
-
+const adminSettingsRoutes = require("./routes/adminSettings.routes");
 
 // CORS
 app.use(
@@ -69,6 +69,6 @@ app.use("/api/admin", adminPlaceRoutes);
 
 app.use("/api", reviewRoutes);
 
-
+app.use("/api/admin", adminSettingsRoutes);
 
 module.exports = app;
