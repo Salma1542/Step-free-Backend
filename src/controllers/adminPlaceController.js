@@ -78,7 +78,7 @@ const deletePlace = async (req, res) => {
 const getAllPlaces = async (req, res) => {
   try {
     const places = await Place.find({
-      status: "approved",
+      status: "accepted",
     }).sort({ createdAt: -1 });
 
     res.status(200).json({
