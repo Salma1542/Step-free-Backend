@@ -89,7 +89,11 @@ const userSchema=new mongoose.Schema(
                 type:Date,
              },
 
-                
+         notificationSettings: {
+  newPlace: { type: Boolean, default: true },
+  newReview: { type: Boolean, default: true },
+  reportedReview: { type: Boolean, default: true },
+},       
 
         
     },
@@ -97,6 +101,9 @@ const userSchema=new mongoose.Schema(
         timestamps:true,
     }
 )
+
+
+
 
 userSchema.pre('save',async function (){
     if(!this.isModified('password')){
