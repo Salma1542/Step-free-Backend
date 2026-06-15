@@ -1,35 +1,13 @@
-// const express=require("express")
-// const cors=require("cors")
-// const cookieParser=require("cookie-parser")
-// const app=express()
-// const authRoutes = require('./routes/authRoutes');
-// const placeRoutes = require('./routes/placeRoutes');
-// const swaggerUi = require("swagger-ui-express");
-// const swaggerSpec = require("./config/swagger");
-// app.use("/api", require("./routes/reviewRoutes"));
-
-
-// app.use(cors())
-// app.use(express.json())
-// app.use(cookieParser())
-
-// app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-
-// // Routes
-// app.use('/api/auth', authRoutes)
-// app.use('/api/places', placeRoutes)
-// app.use("/api", require("./routes/reviewRoutes"));
-
-// module.exports=app
-
 const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
+const path = require("path");
+const swaggerUi = require("swagger-ui-express");
 
-const app = express();
-
+const swaggerSpec = require("./config/swagger");
 const authRoutes = require("./routes/authRoutes");
 const placeRoutes = require("./routes/placeRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
 const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("./config/swagger");
@@ -45,28 +23,22 @@ app.use(
   })
 );
 
+const app = express();
 
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 
-
 // Swagger
-app.use(
-  "/api-docs",
-  swaggerUi.serve,
-  swaggerUi.setup(swaggerSpec)
-);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
+// Static uploads folder
+app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
 
 // Routes
 app.use("/api/auth", authRoutes);
-
 app.use("/api/places", placeRoutes);
-
-app.use("/api/admin", adminReviewRoutes);
-
-app.use("/api/admin", adminPlaceRoutes);
-
+app.use("/api/admin", adminRoutes);
 app.use("/api", reviewRoutes);
 
 app.use("/api/admin", adminSettingsRoutes);

@@ -88,6 +88,18 @@ const userSchema=new mongoose.Schema(
              resetPasswordOtpExpire:{
                 type:Date,
              },
+vehicleType:           { type: String },
+licensePlate:          { type: String },
+vehicleModel:          { type: String },
+vehicleYear:           { type: Number },
+accessibilityFeatures: { type: String },
+availabilityFrom:      { type: String },
+availabilityTo:        { type: String },
+licenseNumber:         { type: String },
+photoUrl:              { type: String },
+licenseImageUrl:       { type: String },
+vehicleImageUrl:       { type: String },
+profileCompleted:      { type: Boolean, default: false },
 
          notificationSettings: {
   newPlace: { type: Boolean, default: true },

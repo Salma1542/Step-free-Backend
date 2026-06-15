@@ -9,7 +9,6 @@ const {
   updatePlace,
   deletePlace,
   getNearbyPlaces,
-  
 } = require("../controllers/placeController");
 
 /**

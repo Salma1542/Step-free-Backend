@@ -334,13 +334,6 @@ const placeSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
-    status: {
-  type: String,
-  enum: ["pending", "accepted", "rejected"],
-  default: "pending",
-},
-
-
     // إشارة للسائقين المرتبطين (اختياري)
     drivers: [
       {
