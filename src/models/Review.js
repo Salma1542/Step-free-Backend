@@ -1,4 +1,4 @@
-// src/models/Review.js
+
 const mongoose = require("mongoose");
 
 const reviewSchema = new mongoose.Schema(
@@ -8,17 +8,22 @@ const reviewSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+
     place: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Place",
       required: true,
     },
+
     rating: {
       type: Number,
       min: 1,
       max: 5,
       required: true,
     },
+
+
+
     comment: {
       type: String,
       required: true,
@@ -26,7 +31,9 @@ const reviewSchema = new mongoose.Schema(
     },
   },
   {
-    timestamps: true, // يضيف createdAt و updatedAt تلقائيًا
+
+    timestamps: true,
+
   }
 );
 
