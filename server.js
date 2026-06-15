@@ -9,6 +9,10 @@ connectDB();
 
 const PORT = process.env.PORT || 5000;
 
-const server = app.listen(PORT, () => {
-  console.log(`server running on ${PORT}`);
-});
+if (process.env.NODE_ENV !== "production" || !process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`server running on ${PORT}`);
+  });
+}
+
+module.exports = app;
