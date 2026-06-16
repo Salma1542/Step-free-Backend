@@ -25,7 +25,7 @@
 const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
-
+const path = require("path");
 const app = express();
 
 const authRoutes = require("./routes/authRoutes");
@@ -36,11 +36,13 @@ const swaggerSpec = require("./config/swagger");
 const adminReviewRoutes = require("./routes/adminReviewRoutes");
 const adminPlaceRoutes = require("./routes/adminPlaceRoutes");
 const adminSettingsRoutes = require("./routes/adminSettings.routes");
+const driverProfileRoutes = require("./routes/driverProfile.routes");
+const driverReviewRoutes = require("./routes/driverReview.routes");
 
 // CORS
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: true,
     credentials: true,
   })
 );
@@ -48,7 +50,11 @@ app.use(
 
 app.use(express.json());
 app.use(cookieParser());
-
+// Serve uploaded files
+app.use(
+  "/uploads",
+  express.static(path.join(__dirname, "../uploads"))
+);
 
 // Swagger
 app.use(
@@ -68,13 +74,12 @@ app.use("/api/admin", adminReviewRoutes);
 app.use("/api/admin", adminPlaceRoutes);
 
 app.use("/api", reviewRoutes);
-module.exports=app
+app.use("/api/driver-reviews", driverReviewRoutes);
 
 const serviceAreaRoutes = require("./routes/serviceAreaRoutes");
-const driverProfileRoutes = require("./routes/driverProfile.routes");
 // ...
 app.use("/api/driver/service-areas", serviceAreaRoutes);
-app.use("/api/driver", driverProfileRoutes);
+app.use("/api/drivers", driverProfileRoutes);
 
 app.use("/api/admin", adminSettingsRoutes);
 
