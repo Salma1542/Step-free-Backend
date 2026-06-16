@@ -44,7 +44,7 @@ const driverProfileRoutes = require("./routes/driverProfile.routes");
 
 app.use(
  cors({
- origin: true,
+ origin: '*',
  credentials: true,
  })
 );
