@@ -32,12 +32,11 @@ const userSchema=new mongoose.Schema(
                 minlength:8,
                 select:false,
             },
-            role:
-            {
-                type:String,
-                enum:['user','driver','placeOwner','admin'],
-                default:'user',
-            },
+            role: {
+  type: String,
+  enum: ['user', 'driver', 'placeowner', 'admin'],
+  default: 'user',
+},
             gender:{
                 type:String,
                 enum:['male','female'],
