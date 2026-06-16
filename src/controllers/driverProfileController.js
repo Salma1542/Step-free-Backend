@@ -1,16 +1,37 @@
-const User = require("../models/User");
+const DriverProfile = require("../models/Driver");
 
 exports.getProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select("-password");
-
-    if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+    if (req.user.role !== "driver") {
+      return res.status(403).json({
+        success: false,
+        message: "Only drivers can access driver profile",
+      });
     }
 
-    return res.json({ success: true, data: user });
+    const profile = await DriverProfile.findOne({
+      driver: req.user._id,
+    }).populate(
+      "driver",
+      "firstName lastName email phone city role profileImage"
+    );
+
+    if (!profile) {
+      return res.status(404).json({
+        success: false,
+        message: "Driver profile not found",
+      });
+    }
+
+    return res.json({
+      success: true,
+      data: profile,
+    });
   } catch (error) {
-    return res.status(500).json({ success: false, message: error.message });
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
@@ -23,47 +44,101 @@ exports.upsertProfile = async (req, res) => {
       });
     }
 
-    const allowedFields = [
-      "vehicleType",
-      "licensePlate",
-      "vehicleModel",
-      "vehicleYear",
-      "accessibilityFeatures",
-      "availabilityFrom",
-      "availabilityTo",
-      "licenseNumber",
-    ];
+    let accessibilityFeatures = req.body.accessibilityFeatures;
 
-    const data = { profileCompleted: true };
-
-    allowedFields.forEach((field) => {
-      if (req.body[field] !== undefined) data[field] = req.body[field];
-    });
-
-    if (data.vehicleYear !== undefined) {
-      data.vehicleYear = Number(data.vehicleYear);
+    if (typeof accessibilityFeatures === "string") {
+      try {
+        accessibilityFeatures = JSON.parse(accessibilityFeatures);
+      } catch {
+        accessibilityFeatures = [accessibilityFeatures];
+      }
     }
 
+    const existingProfile = await DriverProfile.findOne({
+      driver: req.user._id,
+    });
+
+    const data = {
+      driver: req.user._id,
+      vehicleType: req.body.vehicleType,
+      licensePlate: req.body.licensePlate,
+      vehicleModel: req.body.vehicleModel,
+      vehicleYear: Number(req.body.vehicleYear),
+      accessibilityFeatures,
+      availabilityFrom: req.body.availabilityFrom,
+      availabilityTo: req.body.availabilityTo,
+      licenseNumber: req.body.licenseNumber,
+      profileCompleted: true,
+    };
+
     if (req.files?.photo?.[0]) {
-      data.photoUrl = `/uploads/${req.files.photo[0].filename}`;
-      data.profileImage = data.photoUrl;
+      data.photoUrl = req.files.photo[0].path;
+    } else if (existingProfile?.photoUrl) {
+      data.photoUrl = existingProfile.photoUrl;
     }
 
     if (req.files?.license?.[0]) {
-      data.licenseImageUrl = `/uploads/${req.files.license[0].filename}`;
+      data.licenseImageUrl = req.files.license[0].path;
+    } else if (existingProfile?.licenseImageUrl) {
+      data.licenseImageUrl = existingProfile.licenseImageUrl;
     }
 
     if (req.files?.vehicle?.[0]) {
-      data.vehicleImageUrl = `/uploads/${req.files.vehicle[0].filename}`;
+      data.vehicleImageUrl = req.files.vehicle[0].path;
+    } else if (existingProfile?.vehicleImageUrl) {
+      data.vehicleImageUrl = existingProfile.vehicleImageUrl;
     }
 
-    const user = await User.findByIdAndUpdate(req.user._id, data, {
-      new: true,
-      runValidators: true,
-    }).select("-password");
+    const profile = await DriverProfile.findOneAndUpdate(
+      { driver: req.user._id },
+      data,
+      {
+        new: true,
+        upsert: true,
+        runValidators: true,
+        setDefaultsOnInsert: true,
+      }
+    ).populate(
+      "driver",
+      "firstName lastName email phone city role profileImage"
+    );
 
-    return res.json({ success: true, data: user });
+    return res.json({
+      success: true,
+      message: "Driver profile saved successfully",
+      data: profile,
+    });
   } catch (error) {
-    return res.status(500).json({ success: false, message: error.message });
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+exports.getPublicProfile = async (req, res) => {
+  try {
+    const profile = await DriverProfile.findOne({
+      driver: req.params.driverId,
+    }).populate(
+      "driver",
+      "firstName lastName email phone city role profileImage"
+    );
+
+    if (!profile) {
+      return res.status(404).json({
+        success: false,
+        message: "Driver profile not found",
+      });
+    }
+
+    return res.json({
+      success: true,
+      data: profile,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
